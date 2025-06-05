@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Afinador de Violão</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: #000;
+            color: #fff;
+            font-family: 'Arial', sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            text-align: center;
+            max-width: 600px;
+            width: 100%;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            color: #fff;
+        }
+
+        .subtitle {
+            font-size: 1.2rem;
+            color: #ccc;
+            margin-bottom: 40px;
+        }
+
+        .strings-container {
+            display: flex;
+            flex-direction: row;
+            gap: 15px;
+            margin-bottom: 30px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .string-button {
+            background: linear-gradient(145deg, #333, #222);
+            border: 2px solid #555;
+            color: #fff;
+            font-size: 1rem;
+            font-weight: bold;
+            padding: 15px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+            position: relative;
+            overflow: hidden;
+            width: 140px;
+            height: 140px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .string-button:hover {
+            background: linear-gradient(145deg, #444, #333);
+            border-color: #777;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.7);
+        }
+
+        .string-button:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+        }
+
+        .string-button.playing {
+            background: linear-gradient(145deg, #555, #444);
+            border-color: #999;
+            animation: pulse 0.5s ease-in-out;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        .string-info {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+            text-align: center;
+        }
+
+        .string-number {
+            font-size: 0.8rem;
+            color: #aaa;
+        }
+
+        .note-name {
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+
+        .frequency {
+            font-size: 0.7rem;
+            color: #888;
+        }
+
+        .instructions {
+            color: #999;
+            font-size: 1rem;
+            line-height: 1.5;
+            margin-top: 20px;
+        }
+
+        @media (max-width: 480px) {
+            h1 {
+                font-size: 2rem;
+            }
+            
+            .string-button {
+                font-size: 1.2rem;
+                padding: 15px;
+            }
+            
+            .note-name {
+                font-size: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎸 Afinador de Violão</h1>
+        <p class="subtitle">Clique nas cordas para ouvir as notas</p>
+        
+        <div class="strings-container">
+            <button class="string-button" data-note="E" data-frequency="329.63" data-string="1" data-volume="0.3">
+                <div class="string-info">
+                    <span class="string-number">1ª Corda</span>
+                    <span class="note-name">Mi (E)</span>
+                    <span class="frequency">329.6 Hz</span>
+                </div>
+            </button>
+            
+            <button class="string-button" data-note="B" data-frequency="246.94" data-string="2" data-volume="0.5">
+                <div class="string-info">
+                    <span class="string-number">2ª Corda</span>
+                    <span class="note-name">Si (B)</span>
+                    <span class="frequency">246.9 Hz</span>
+                </div>
+            </button>
+            
+            <button class="string-button" data-note="G" data-frequency="196.00" data-string="3" data-volume="1">
+                <div class="string-info">
+                    <span class="string-number">3ª Corda</span>
+                    <span class="note-name">Sol (G)</span>
+                    <span class="frequency">196.0 Hz</span>
+                </div>
+            </button>
+            
+            <button class="string-button" data-note="D" data-frequency="146.83" data-string="4" data-volume="1.38">
+                <div class="string-info">
+                    <span class="string-number">4ª Corda</span>
+                    <span class="note-name">Ré (D)</span>
+                    <span class="frequency">146.8 Hz</span>
+                </div>
+            </button>
+            
+            <button class="string-button" data-note="A" data-frequency="110.00" data-string="5" data-volume="1.7">
+                <div class="string-info">
+                    <span class="string-number">5ª Corda</span>
+                    <span class="note-name">Lá (A)</span>
+                    <span class="frequency">110.0 Hz</span>
+                </div>
+            </button>
+            
+            <button class="string-button" data-note="E" data-frequency="82.41" data-string="6" data-volume="4">
+                <div class="string-info">
+                    <span class="string-number">6ª Corda</span>
+                    <span class="note-name">Mi (E)</span>
+                    <span class="frequency">82.4 Hz</span>
+                </div>
+            </button>
+        </div>
+        
+        <div class="instructions">
+            <p>• Clique em uma corda para ouvir a nota por 2 segundos</p>
+            <p>• Clique novamente para parar a nota atual</p>
+            <p>• Clique em outra corda para trocar imediatamente</p>
+        </div>
+    </div>
+
+    <script>
+        class GuitarTuner {
+            constructor() {
+                this.audioContext = null;
+                this.currentOscillator = null;
+                this.currentGainNode = null;
+                this.currentButton = null;
+                this.stopTimeout = null;
+                this.init();
+            }
+
+            async init() {
+                try {
+                    this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                } catch (error) {
+                    console.error('Web Audio API não suportada:', error);
+                    alert('Seu navegador não suporta Web Audio API');
+                    return;
+                }
+
+                this.setupEventListeners();
+            }
+
+            setupEventListeners() {
+                const buttons = document.querySelectorAll('.string-button');
+                buttons.forEach(button => {
+                    button.addEventListener('click', (e) => this.handleButtonClick(e));
+                });
+            }
+
+            async handleButtonClick(event) {
+                const button = event.currentTarget;
+                
+                // Se o contexto de áudio estiver suspenso, resuma ele
+                if (this.audioContext.state === 'suspended') {
+                    await this.audioContext.resume();
+                }
+
+                // Se o mesmo botão está tocando, pare
+                if (this.currentButton === button) {
+                    this.stopCurrentNote();
+                    return;
+                }
+
+                // Para qualquer nota atual
+                this.stopCurrentNote();
+
+                // Toca a nova nota
+                this.playNote(button);
+            }
+
+            playNote(button) {
+                const frequency = parseFloat(button.dataset.frequency);
+                const volume = parseFloat(button.dataset.volume);
+
+                // Cria oscilador
+                this.currentOscillator = this.audioContext.createOscillator();
+                this.currentGainNode = this.audioContext.createGain();
+
+                // Conecta oscilador -> gain -> destino
+                this.currentOscillator.connect(this.currentGainNode);
+                this.currentGainNode.connect(this.audioContext.destination);
+
+                // Configura a forma de onda (sine para som mais suave)
+                this.currentOscillator.type = 'sine';
+                this.currentOscillator.frequency.setValueAtTime(frequency, this.audioContext.currentTime);
+
+                // Configura volume com fade in e fade out
+                this.currentGainNode.gain.setValueAtTime(0, this.audioContext.currentTime);
+                this.currentGainNode.gain.linearRampToValueAtTime(volume, this.audioContext.currentTime + 0.1);
+                this.currentGainNode.gain.linearRampToValueAtTime(volume * 0.8, this.audioContext.currentTime + 1.8);
+                this.currentGainNode.gain.linearRampToValueAtTime(0, this.audioContext.currentTime + 2);
+
+                // Inicia o som
+                this.currentOscillator.start(this.audioContext.currentTime);
+                this.currentOscillator.stop(this.audioContext.currentTime + 2);
+
+                // Atualiza estado
+                this.currentButton = button;
+                button.classList.add('playing');
+
+                // Para automaticamente após 2 segundos
+                this.stopTimeout = setTimeout(() => {
+                    this.stopCurrentNote();
+                }, 2000);
+
+                // Remove o oscilador quando terminar
+                this.currentOscillator.onended = () => {
+                    if (this.currentButton === button) {
+                        this.currentButton = null;
+                        button.classList.remove('playing');
+                    }
+                };
+            }
+
+            stopCurrentNote() {
+                if (this.currentOscillator) {
+                    try {
+                        // Fade out rápido
+                        this.currentGainNode.gain.linearRampToValueAtTime(0, this.audioContext.currentTime + 0.1);
+                        this.currentOscillator.stop(this.audioContext.currentTime + 0.1);
+                    } catch (error) {
+                        // Oscilador já pode ter parado
+                    }
+                    this.currentOscillator = null;
+                    this.currentGainNode = null;
+                }
+
+                if (this.currentButton) {
+                    this.currentButton.classList.remove('playing');
+                    this.currentButton = null;
+                }
+
+                if (this.stopTimeout) {
+                    clearTimeout(this.stopTimeout);
+                    this.stopTimeout = null;
+                }
+            }
+        }
+
+        // Inicializa o afinador quando a página carregar
+        document.addEventListener('DOMContentLoaded', () => {
+            new GuitarTuner();
+        });
+    </script>
+<div class="footer">
+    <p>Criado por Gabriel Almeida - Meu Email:</p>
+    <a href="mailto:2gabrieldedeus@gmail.com" class="email-button">
+        📧 2gabrieldedeus@gmail.com
+    </a>
+ </div>
+ 
+ <style>
+ .footer {
+    margin-top: 40px;
+    text-align: center;
+    color: #999;
+ }
+ 
+ .email-button {
+    display: inline-block;
+    background: linear-gradient(145deg, #333, #222);
+    border: 2px solid #555;
+    color: #fff;
+    text-decoration: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    margin-top: 10px;
+    transition: all 0.3s ease;
+ }
+ 
+ .email-button:hover {
+    background: linear-gradient(145deg, #444, #333);
+    border-color: #777;
+    transform: translateY(-2px);
+ }
+ </style>
+</body>
+</html>
