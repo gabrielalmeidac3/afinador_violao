@@ -21,6 +21,7 @@
             justify-content: center;
             min-height: 100vh;
             padding: 20px;
+            position: relative;
         }
 
         .container {
@@ -126,6 +127,112 @@
             margin-top: 20px;
         }
 
+        /* Volume Control */
+        .volume-control {
+            position: fixed;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+            z-index: 1000;
+        }
+
+        .volume-icon {
+            font-size: 1.5rem;
+            color: #fff;
+            margin-bottom: 5px;
+        }
+
+        .volume-slider-container {
+            position: relative;
+            height: 200px;
+            width: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .volume-slider {
+            position: relative;
+            width: 8px;
+            height: 180px;
+            background: linear-gradient(to top, #333, #222);
+            border: 2px solid #555;
+            border-radius: 10px;
+            cursor: pointer;
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.5);
+        }
+
+        .volume-fill {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background: linear-gradient(to top, #4CAF50, #81C784);
+            border-radius: 6px;
+            transition: height 0.1s ease;
+        }
+
+        .volume-handle {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background: linear-gradient(145deg, #fff, #ddd);
+            border: 2px solid #555;
+            border-radius: 50%;
+            cursor: pointer;
+            left: 50%;
+            transform: translateX(-50%);
+            transition: all 0.1s ease;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+        }
+
+        .volume-handle:hover {
+            background: linear-gradient(145deg, #f5f5f5, #ccc);
+            transform: translateX(-50%) scale(1.1);
+        }
+
+        .volume-handle.dragging {
+            background: linear-gradient(145deg, #4CAF50, #45a049);
+            transform: translateX(-50%) scale(1.2);
+        }
+
+        .volume-percentage {
+            color: #fff;
+            font-size: 0.9rem;
+            font-weight: bold;
+            margin-top: 10px;
+            text-align: center;
+            min-width: 40px;
+        }
+
+        .footer {
+            margin-top: 40px;
+            text-align: center;
+            color: #999;
+        }
+
+        .email-button {
+            display: inline-block;
+            background: linear-gradient(145deg, #333, #222);
+            border: 2px solid #555;
+            color: #fff;
+            text-decoration: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            margin-top: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .email-button:hover {
+            background: linear-gradient(145deg, #444, #333);
+            border-color: #777;
+            transform: translateY(-2px);
+        }
+
         @media (max-width: 480px) {
             h1 {
                 font-size: 2rem;
@@ -138,6 +245,18 @@
             
             .note-name {
                 font-size: 1.5rem;
+            }
+
+            .volume-control {
+                right: 10px;
+            }
+
+            .volume-slider-container {
+                height: 150px;
+            }
+
+            .volume-slider {
+                height: 130px;
             }
         }
     </style>
@@ -204,7 +323,129 @@
         </div>
     </div>
 
+    <!-- Volume Control -->
+    <div class="volume-control">
+        <div class="volume-icon">🔊</div>
+        <div class="volume-slider-container">
+            <div class="volume-slider" id="volumeSlider">
+                <div class="volume-fill" id="volumeFill"></div>
+                <div class="volume-handle" id="volumeHandle"></div>
+            </div>
+        </div>
+        <div class="volume-percentage" id="volumePercentage">100%</div>
+    </div>
+
+    <div class="footer">
+        <p>Criado por Gabriel Almeida - Meu Email:</p>
+        <a href="mailto:2gabrieldedeus@gmail.com" class="email-button">
+            📧 2gabrieldedeus@gmail.com
+        </a>
+    </div>
+
     <script>
+        class VolumeController {
+            constructor() {
+                this.volume = 100; // Volume inicial 100%
+                this.masterGainNode = null;
+                this.slider = document.getElementById('volumeSlider');
+                this.fill = document.getElementById('volumeFill');
+                this.handle = document.getElementById('volumeHandle');
+                this.percentage = document.getElementById('volumePercentage');
+                this.isDragging = false;
+                
+                this.init();
+            }
+
+            init() {
+                this.updateVisuals();
+                this.setupEventListeners();
+            }
+
+            setupEventListeners() {
+                // Mouse events
+                this.slider.addEventListener('click', (e) => this.handleSliderClick(e));
+                this.handle.addEventListener('mousedown', (e) => this.startDrag(e));
+                document.addEventListener('mousemove', (e) => this.handleDrag(e));
+                document.addEventListener('mouseup', () => this.stopDrag());
+
+                // Touch events for mobile
+                this.handle.addEventListener('touchstart', (e) => this.startDrag(e));
+                document.addEventListener('touchmove', (e) => this.handleDrag(e));
+                document.addEventListener('touchend', () => this.stopDrag());
+                this.slider.addEventListener('touchstart', (e) => this.handleSliderClick(e));
+            }
+
+            handleSliderClick(event) {
+                if (this.isDragging) return;
+                
+                const rect = this.slider.getBoundingClientRect();
+                const y = event.touches ? event.touches[0].clientY : event.clientY;
+                const clickPosition = rect.bottom - y;
+                const percentage = Math.max(0, Math.min(100, (clickPosition / rect.height) * 100));
+                
+                this.setVolume(percentage);
+            }
+
+            startDrag(event) {
+                this.isDragging = true;
+                this.handle.classList.add('dragging');
+                event.preventDefault();
+            }
+
+            handleDrag(event) {
+                if (!this.isDragging) return;
+                
+                const rect = this.slider.getBoundingClientRect();
+                const y = event.touches ? event.touches[0].clientY : event.clientY;
+                const dragPosition = rect.bottom - y;
+                const percentage = Math.max(0, Math.min(100, (dragPosition / rect.height) * 100));
+                
+                this.setVolume(percentage);
+                event.preventDefault();
+            }
+
+            stopDrag() {
+                this.isDragging = false;
+                this.handle.classList.remove('dragging');
+            }
+
+            setVolume(percentage) {
+                this.volume = percentage;
+                this.updateVisuals();
+            }
+
+            updateVisuals() {
+                const fillHeight = this.volume;
+                const handlePosition = this.volume;
+                
+                this.fill.style.height = `${fillHeight}%`;
+                this.handle.style.bottom = `${handlePosition}%`;
+                this.handle.style.transform = `translateX(-50%) translateY(50%)`;
+                this.percentage.textContent = `${Math.round(this.volume)}%`;
+            }
+
+            getVolumeMultiplier() {
+                // Permite amplificação até 3x (300%) quando o volume está em 100%
+                // 0% = 0x, 50% = 1x (volume normal), 100% = 3x (amplificado)
+                return (this.volume / 100) * 3;
+            }
+
+            connectToAudioContext(audioContext) {
+                if (!this.masterGainNode) {
+                    this.masterGainNode = audioContext.createGain();
+                    this.masterGainNode.connect(audioContext.destination);
+                }
+                this.masterGainNode.gain.setValueAtTime(this.getVolumeMultiplier(), audioContext.currentTime);
+                return this.masterGainNode;
+            }
+
+            updateGain(audioContext) {
+                if (this.masterGainNode) {
+                    this.masterGainNode.gain.setValueAtTime(this.getVolumeMultiplier(), audioContext.currentTime);
+                }
+            }
+        }
+
         class GuitarTuner {
             constructor() {
                 this.audioContext = null;
@@ -212,6 +453,7 @@
                 this.currentGainNode = null;
                 this.currentButton = null;
                 this.stopTimeout = null;
+                this.volumeController = new VolumeController();
                 this.init();
             }
 
@@ -232,6 +474,18 @@
                 buttons.forEach(button => {
                     button.addEventListener('click', (e) => this.handleButtonClick(e));
                 });
+
+                // Atualiza o volume quando o controle muda
+                const volumeSlider = document.getElementById('volumeSlider');
+                const volumeHandle = document.getElementById('volumeHandle');
+                
+                const updateVolume = () => {
+                    this.volumeController.updateGain(this.audioContext);
+                };
+
+                volumeSlider.addEventListener('click', updateVolume);
+                volumeHandle.addEventListener('mouseup', updateVolume);
+                volumeHandle.addEventListener('touchend', updateVolume);
             }
 
             async handleButtonClick(event) {
@@ -263,9 +517,10 @@
                 this.currentOscillator = this.audioContext.createOscillator();
                 this.currentGainNode = this.audioContext.createGain();
 
-                // Conecta oscilador -> gain -> destino
+                // Conecta oscilador -> gain -> volume controller -> destino
                 this.currentOscillator.connect(this.currentGainNode);
-                this.currentGainNode.connect(this.audioContext.destination);
+                const masterGain = this.volumeController.connectToAudioContext(this.audioContext);
+                this.currentGainNode.connect(masterGain);
 
                 // Configura a forma de onda (sine para som mais suave)
                 this.currentOscillator.type = 'sine';
@@ -329,37 +584,5 @@
             new GuitarTuner();
         });
     </script>
-<div class="footer">
-    <p>Criado por Gabriel Almeida - Meu Email:</p>
-    <a href="mailto:2gabrieldedeus@gmail.com" class="email-button">
-        📧 2gabrieldedeus@gmail.com
-    </a>
- </div>
- 
- <style>
- .footer {
-    margin-top: 40px;
-    text-align: center;
-    color: #999;
- }
- 
- .email-button {
-    display: inline-block;
-    background: linear-gradient(145deg, #333, #222);
-    border: 2px solid #555;
-    color: #fff;
-    text-decoration: none;
-    padding: 10px 20px;
-    border-radius: 8px;
-    margin-top: 10px;
-    transition: all 0.3s ease;
- }
- 
- .email-button:hover {
-    background: linear-gradient(145deg, #444, #333);
-    border-color: #777;
-    transform: translateY(-2px);
- }
- </style>
 </body>
 </html>
